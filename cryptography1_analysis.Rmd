@@ -1,0 +1,957 @@
+---
+title: "cryptography1_analysis"
+author: "Veronica Isiaho"
+date: "01/09/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+## Remove all existing variables
+```{r}
+rm(list = setdiff(ls(), lsf.str()))
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1.0 Defining the question
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. The main aim is to identify which individuals are most likely to click on her ads.
+
+## 1.1 The metric for success
+To identify which individuals are most likely to click on the ads.
+
+## 1.2 The context
+According to [wikipedia](https://en.wikipedia.org/wiki/Cryptography), until modern times, cryptography referred almost exclusively to encryption, which is the process of converting ordinary information (called plaintext) into unintelligible form (called ciphertext).[12] Decryption is the reverse, in other words, moving from the unintelligible ciphertext back to plaintext. There's therefore a need to know which individuals are most likely to view the course ads.
+
+## 1.3 Experimental design 
+1. Load the dataset
+2. Find and deal with:
+ + Outliers, 
+ + Anomalies, 
+ + Missing data within the dataset
+3. Perform  univariate and bivariate analysis.
+4. Conclusion 
+5. Recommendation.
+
+## 1.4 Appropriateness of the available data 
+The data used is available on this [link](http://bit.ly/IPAdvertisingData)
+
+
+## Setup workspace
+```{r}
+getwd()
+```
+
+## locating the dataset
+```{r}
+# Locate the dataset
+setwd("D:/veronica_moringa/project_dsp/R_project/R_Project_Cryptography")
+```
+
+
+## Load the Dataset
+```{r}
+df <- read.csv('advertising.csv',sep = ',', header=TRUE)
+```
+
+## Preview the dataset
+```{r}
+head(df)
+```
+
+```{r}
+# Preview the dataframe
+cat("Previewing the Dataset")
+df
+```
+
+### Exploratory Data Analysis
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# Print the summary of the dataframe.
+print(summary(df)) 
+```
+
+```{r}
+summary(df)
+```
+
+```{r}
+# Preview the first five rows.
+result <- df[1:5,]
+print(result)
+```
+
+```{r}
+# Preview the las five rows of dataframe
+tail(df, 5)
+```
+
+```{r}
+View
+```
+
+```{r}
+# Preview the dataframe in details
+View(df)
+```
+
+```{r}
+library(knitr)
+```
+
+```{r}
+# Import a library for plotting graphs
+library(ggplot2)
+```
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+# Preview the datatypes for all the 10 columns in the dataframe
+glimpse(df)
+```
+
+```{r}
+# Preview the column names
+colnames(df)
+```
+
+```{r}
+result2 <- df[1:2,]
+print(result2)
+```
+
+```{r}
+# Load in `ggvis`
+library(ggvis)
+```
+
+```{r}
+# Check for the number of rows and columns in the dataframe
+my_string1 <- "The number of rows in the dataframe are"
+my_variable1 <- nrow(df)
+
+my_string2 <- "\nThe number of columns in the dataframe are"
+my_variable2 <- ncol(df)
+
+cat(paste(my_string1, my_variable1))
+
+cat(paste(my_string2, my_variable2))
+```
+
+```{r}
+# Check for missing values
+sum(is.na(df))
+mean(is.na(df))
+```
+From the above results, there are no missing values.
+
+# 2 Data Cleaning
+## 2.0 Renaming the Columns
+```{r}
+# Rename columns with the details on the first row
+#names(df) <- lapply(df[1, ], as.character)
+
+# Preview to see changes have been made
+head(df, 3)
+```
+The columns have been renamed using the details on the first row. I will therefore drop the first row.
+
+```{r}
+# Drop the first row
+#df <- df[-1,] 
+
+# preview the first 3 rows
+head(df, 3)
+```
+
+```{r}
+# Preview the column names of the dataframe
+colnames(df)
+```
+## 2.1 Removing spaces on the column names and make them lower cases
+
+```{r}
+new_names <- c("Daily_Time_Site", "Age", "Income", "Daily_Internet_Usage",
+               "Ad_Topic_Line", "City", "Male", "Country", "Timestamp",
+               "Clicked_on_Ad")
+colnames(df) <- new_names
+head(df, 2)
+```
+
+## 2.2 Dealing with anomalies in the dataframe
+```{r}
+# Changing the column names from upper case to lower case
+colnames(df) <- tolower(colnames(df))
+
+# Preview to confirm changes are effected
+head(df, 2)
+
+```
+
+All the data types are in character format. There's need to change them to the relevant data types.
+
+### 2.2.1 Change the datatypes to the right ones
+1. Change daily time site, income, daily internet usage, male and clicked_on_ad columns from character to numeric
+Decimal values are referred to as numeric data types in R. Therefore, I will change daily time site, income and daily internet usage columns from character to numeric. 
+
+```{r}
+# Change the data types for daily time site, income and daily internet to numeric
+tonumeric<-c("daily_time_site","income","daily_internet_usage")
+c <- for (i in tonumeric)df[,i]<-as.numeric(df[,i])
+  
+# Confirm the data types after conversion
+class(df$i)
+```
+
+2. Change the age column from character to integer
+```{r}
+# Change the age, male and clicked_on_ad columns data type from character to integer
+tointeger<- c("age", "male", "clicked_on_ad")
+d <- for (k in tointeger)df[,k]<-as.integer(df[,k])
+
+# Preview the data type for age column
+age_info <- "The data type for the age column is"
+age_class <- class(df$age)
+age_class
+
+cat(paste(age_info, age_class))
+```
+
+```{r}
+# Change the timestamp data type column from character to date time
+df$timestamp <- as.POSIXct(df$timestamp)   
+#str(timeDate)
+class(df$timestamp)
+```
+
+```{r}
+# Preview data types for the entire dataframe
+sapply(df, class)
+```
+
+```{r}
+# Preview the first three columns after the changes
+head(df,3)
+```
+### 2.3 Plot a time series graph showing different time visits
+
+### 2.4 Change the data to time series
+```{r}
+# Separate the timestamp column to time and year
+# Convert it to a time series object.
+#df$clicked_on_ad.timeseries <- ts(df$clicked_on_ad,start = c(2016,1),frequency = 7)
+
+# rm(Y)
+Y <- ts(df$clicked_on_ad,start = c(2016,1),frequency = 12)
+```
+
+#### 2.4.1 Preliminary Analysis
+##### 1. Time Plot
+```{r}
+# Import ffp2 library for plotting of time series graphs
+library(fpp2)
+```
+
+
+```{r}
+# Time Plot
+autoplot(Y)+
+  ggtitle("Time Plot: Clicks on the ad Per day")+
+  ylab("Number of Clicks on the ad (2016)")
+```
+```{r}
+# Investigate Transformations
+DY <- diff(Y)
+
+# Time Plot of Difference Data
+autoplot(DY)+
+  ggtitle("Time Plot of Difference Data: Clicks on the ad Per day")+
+  ylab("Number of Clicks on the ad")
+```
+
+```{r}
+# Investigate Seasonality
+ggseasonplot(DY)+
+  ggtitle("Seasonal Plot: Clicks on the ad Per day")+
+  ylab("Clicks on the ad")
+```
+
+```{r}
+# Look at another Seasonal plot: Sub-series Plot
+ggsubseriesplot(DY)+
+  ggtitle("Sub-Series Seasonality Plot: Clicks on the ad Per day")+
+  ylab("Clicks on the ad")
+
+# Give the chart file a name.
+png(file = "Cryptography_3.png")  
+
+# Save the file
+dev.off()
+```
+From the above plot, it is evident that the clicks on the ad is positive on the months of January, March, July, August, October and November. The month with highest clicks on the ad was march, followed by January, July, a big drop in August then it picked in October and finally December.
+
+The months that didn't have clicks on the ad were, February with the lowest -0.35 followed by the month of December. 
+
+### 2.4.2 Forecasting
+#### 2.4.2.1 Seasonal naive Method as our benchmark Forecast
+```{r}
+# Use a benchmark method to forecast
+# Use Seasonal naive Method as our forecast
+# y-t = y_{t-s} + e_t
+
+fit <- snaive(DY)
+print(summary(fit))
+checkresiduals(fit)
+
+cat("The Residual sd was 1.0153. Residuals Values close to 0 are better for it tells how our model fits.\n ")
+cat("The Residual sd: 1.0153 indicates that our model is 1.053 difference from attaining clicks on the ad.")
+```
+The Residual Standard deviation was 1.0153. Residuals Values close to 0 are better for it tells how our model fits. The Residual standard deviation of 1.0216 indicates that our model is 1.053 difference from attaining clicks on the ad.
+
+five points of the ACF value are outside the required 95% confidence level. That will be sorted to ensure all the values are within the 95% confidence interval.
+
+#### 2.4.2.2. Forecasting with Exponential Smoothing Model
+```{r}
+# Fit ETS Method
+# This method can use regular data so I will fit the regular data with trend
+fit.ets <- ets(Y) # The sigma:  0.5012 is same as Residuals stadard Deviation.
+print(summary(fit.ets))
+checkresiduals(fit.ets)
+```
+There's an improvement on the ETS model. it has a residual value of sigma:  0.5005 which is a bit lower from the benchmark model which had a residual Standard value of 1.0153. Most of the ACF values are within the 95% confidence interval. This means that most correlations are included in the model. Let's finally forecast using ARINA model and see what results we'll obtain. 
+
+#### 2.4.2.3 Forecasting Using ARINA Model
+```{r}
+fit_arima <- auto.arima(Y, d=1, D=1, stepwise = FALSE, trace=TRUE)
+print(summary(fit_arima)) # The squared error was 0.4235 which residual Standard Deviation's would be 0.6507688. 
+checkresiduals(fit_arima)
+```
+There are several ACF values outside the confidence interval. The Residual standard Deviation value for ARIMA model was a bit higher than that of Exponential Smoothing.It had a Residual standard Deviation of 0.6507688. Therefore, the best model for forecasting is Exponential Smooting as it had the lowest residual standard deviation of 0.5005 and nearly all ACF values were within the 95% confidence interval apart from one point which was slightly above the 95% confidence interval with a value of 0.01 which is insignificant.
+
+### 2.4.3 Two-Year Forecast with Exponential Smoothing Model 
+```{r echo=FALSE}
+fcast <- forecast(fit.ets, h=24)
+autoplot(fcast)
+```
+
+```{r}
+# Print Summary of the forecast
+cat("Summary of the Forecast")
+print(summary(fcast))
+```
+Root Mean Square Error of 0.5000247 is quit low. Therefore the model prediction accuracy is good.
+
+```{r}
+# Give the chart file a name.
+png(file = "Cryptography.png")
+```
+
+
+```{r}
+# Saving the dataframe to tibble format
+my_data <- as_tibble(df)
+my_data
+```
+
+```{r}
+# check if there are any duplicates
+duplicated(my_data)
+```
+
+There are no duplicates in the dataframe
+```{r}
+# Preview the column names
+colnames(my_data)
+```
+
+```{r}
+# Get the shape of the dataframe
+dim(my_data)
+```
+## 2.3 Check for Outliers
+
+```{r}
+# Load the package
+library(ggstatsplot)
+```
+
+```{r}
+# Find outliers
+#check_outliers(my_data, method = c("cook", "pareto"), threshold = NULL, ...)
+```
+
+```{r}
+sapply(my_data, class)
+```
+
+```{r}
+# Create a boxplot of the dataset for numeric columns
+par(mfrow=c(2,4))
+numeric_col <- c("daily_time_site", "age", "income", "daily_internet_usage", "male",
+                      "clicked_on_ad")
+# Removed the timestamp column
+df2 <- df %>% select("daily_time_site", "age", "income", "daily_internet_usage", "male",
+              "clicked_on_ad")
+
+# Plot the boxplot by creating a for loop to iterate in the numeric_col list
+for(g in 1:4){
+  hist(df[, g], main=names(df)[g], xlab=NULL, width=200*g, height=200*g)
+  boxplot(df[,g], main=names(df)[g], horizontal = TRUE, geom=c("boxplot", "jitter"),
+          color=df[,g], fill = df$clicked_on_ad, width=200*g, height=200*g)
+}
+```
+
+
+```{r}
+# Create a boxplot of the dataset for character columns
+#character_col <- c(my_data$ad_topic_line, my_data$city, my_data$country)
+
+#for(g in 1:3){
+#  hist(character_col[, g], main=names(character_col)[g], xlab=NULL, width=200*g, height=200*g)
+#  boxplot(character_col[,g], main=names(character_col)[g], horizontal = TRUE, 
+ #         geom=c("boxplot", "jitter"),width=200*g, height=200*g)
+#}
+```
+
+# 3.0 Univariate Analysis
+```{r}
+ggplot(data = my_data) +
+  geom_bar(mapping = aes(x = clicked_on_ad))+
+  labs(
+    title='Overall Count of those who Clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+# Table for males and females who clicked on the ad and those who didn't
+cat("Table for Males and Females who clicked on the ad and those who didn't:")
+table(df$male, df$clicked_on_ad)
+```
+
+```{r}
+# Heatmap for males and females who clicked on the ad
+df %>% 
+  count(male, clicked_on_ad) %>%  
+  ggplot(mapping = aes(x = male, y = clicked_on_ad)) +
+    geom_tile(mapping = aes(fill = n))+
+  labs(
+    title='Heatmap between those who Clicked on the ad and Gender',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+df %>% 
+  count(age, clicked_on_ad) %>%  
+  ggplot(mapping = aes(x = age, y = clicked_on_ad)) +
+    geom_tile(mapping = aes(fill = n))+
+  labs(
+    title='Heatmap between those who Clicked on the ad and Age',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+
+```{r}
+# Scatter plot
+#my_data %>% ggvis(~my_data$age, ~my_data$age, fill = ~clicked_on_ad) %>% layer_points()
+```
+
+## 3.1  Interpret and Challengee the solution
+### 3.1.1 Perform Normality Test Using K-S Test
+The null hypothesis of the K-S test is that the distribution is normal.Therefore, if p-value of the test is >0.05, we do not reject the null hypothesis and conclude that the distribution in question is not statistically different from a normal distribution. 
+
+```{r}
+# Create a new vector and assign it to x
+x <- my_data$daily_internet_usage
+
+# Get the Returns
+x <-as.data.frame(diff(x)/x[-length(x)])
+
+# Add name to the column
+names(x)<-"r"
+
+# Perform the K-S test
+ks.test(x$r, "pnorm", mean=mean(x$r), sd=sd(x$r))
+
+
+```
+The p-value = 0.000005816 is a smaller than 0.05, therefore we conclude that the distribution of the daily internet usage returns (for 2016) is significantly different from normal distribution.
+
+### 3.1.2 Perform Normality Test Using Shapiro-Wilks Test
+```{r}
+# Perform shapiro-Wilks Test
+shapiro.test(x$r)
+```
+```{r}
+# Normality Test for clicks on add
+# Create a new vector and assign it to x
+x <- my_data$clicked_on_ad
+
+# Get the Returns
+x <-as.data.frame(diff(x)/x[-length(x)])
+
+# Add name to the column
+names(x)<-"r"
+
+# Perform the K-S test
+ks.test(x$r, "pnorm", mean=mean(x$r), sd=sd(x$r))
+```
+
+### 3.1.3 Performing Chi-Square Test of Independence
+H0: The variables are not associated i.e., are independent. (NULL Hypothesis)
+H1: The variables are associated, i.e., are dependent. (Alternative Hypothesis)
+
+If the “p” value is above 0.05, it means the probability of independence is fairly high and sufficient enough to conclude that the variables do not have a relationship. However, anything below 0.05 means that the probability of independence is insignificantly low, and the variables share a strong correlation.
+
+```{r}
+# Chi-Square Test of Independence between age and clicks on ad
+cat("Chi-Square Test of Independence between age and clicks on ad")
+chisq.test(my_data$age, my_data$clicked_on_ad)
+```
+From the above results, the p-value of 0.00000000000000022 is way below 0.05. This is a strong evidence of a strong correlation between age and the clicks on the ad.
+
+```{r}
+# Chi-Square Test of Independence between income and clicks on ad
+cat("Chi-Square Test of Independence between income and clicks on ad is as below:\n")
+chisq.test(my_data$income, my_data$clicked_on_ad)
+```
+A p-value of 0.4851 indicates no correlation between income and clicks on ad
+
+```{r}
+# Chi-Square Test of Independence between daily time on site and clicks on ad
+cat("Chi-Square Test of Independence between daily time site and clicks on ad\n")
+chisq.test(my_data$daily_time_site, my_data$clicked_on_ad)
+```
+There's no correlation between daily time on site and clicks on site having a p value of 0.06513.
+
+```{r}
+# Chi-Square Test of Independence between daily internet usage and clicks on ad
+cat("Chi-Square Test of Independence between daily internet usage and clicks on ad")
+chisq.test(my_data$daily_internet_usage, my_data$clicked_on_ad)
+```
+There's also no correlation between daily internet usage and clicks on the ad having a p value of 0.3122.
+
+### How to make improvements on EDA.
+Improvements on Exploratory Data Analysis can be made by doing feature engineering on the age of participants. The ages can be grouped into bins. Another way to improve on the EDA is by performing a time series analysis to access at what times had most clicks on the ad.
+
+
+```{r}
+# Summary statistics by those who clicked on the ad
+cat("Summary Statistics by those who Clicked on the ad.\n")
+summary(my_data)
+```
+
+```{r}
+# Summary statistics by those who clicked on the ad and those who didn't
+cat("Summary statistics for those who clicked on the ad and those who didn't:\n")
+by(df, df$clicked_on_ad, summary)
+```
+The minimum daily time spent on the ad for those who clicked on it was 32.6 minutes while that of those who didn't click was 48.22 minutes with a minimum internet usage of 146.2. Those who clicked on the ad had a minimum internet usage of 104.8.
+
+```{r}
+library(pastecs)
+```
+
+```{r}
+# Find a detailed descriptive statistics
+options(scipen = 999)# Remove the exponentials on the output 
+cat("Detailed Descriptive Statistics\n")
+stat.desc (df)
+```
+
+```{r}
+# Calculating the variance
+options(scipen = 999)
+cat("Calculating the variance:\n")
+var(my_data)
+```
+
+```{r}
+# Find the standard deviation
+#sd(numeric_col)
+data_n <- c("daily_time_site", "age", "income", "daily_internet_usage", "male",
+                 "clicked_on_ad")
+info1 <- "The standard deviation for the numeric columns are:\n"
+cat(paste(info1))
+sapply(my_data[1:4], sd)
+```
+
+```{r}
+# Find the variance of the numerical data
+info2 <- "The variance for the numeric columns are:\n"
+cat(paste(info2))
+sapply(my_data[1:4], var)
+```
+
+```{r}
+#  Find the mean of the numerical data
+info7 <- "The mean for the numeric columns are:\n"
+cat(paste(info7))
+sapply(my_data[1:4], mean)
+```
+
+```{r}
+# Finding the Quartiles
+info8 <- "The quantiles for the numeric columns are:\n"
+cat(paste(info8))
+sapply(my_data[1:4], quantile)
+```
+
+```{r}
+# Find the Interquartile Range
+info3 <- "The interquartile range for the numeric columns are:\n"
+cat(paste(info3))
+sapply(my_data[1:4], IQR)
+```
+
+```{r}
+# Find the max, min and Range for the numerical columns
+info4 <- "The minimum values for the numeric columns are:\n"
+cat(paste(info4))
+min <- sapply(my_data[1:4], min)
+print(min)
+info5 <- "\nThe maximum values for the numeric columns are:\n"
+cat(paste(info5))
+max <- sapply(my_data[1:4], max)
+print(max)
+info6 <- "\nThe range for the numeric columns are:\n"
+cat(paste(info6))
+range = max - min
+print(range)
+```
+The minimum age of the participant was 19 years old while the oldest was 60 years old. The minimum daily time spent on the site was 32minutes while the maximum time spent was 91 minutes. 
+
+```{r}
+# Required for skewness() function
+library(moments)
+```
+
+### Detremine the Skewness of the data
+If skewness is less than −1 or greater than +1, the distribution is highly skewed.
+If skewness is between −1 and −½ or between +½ and +1, the distribution is moderately skewed.
+If skewness is between −½ and +½, the distribution is approximately symmetric.
+
+```{r}
+# Print skewness of distribution
+# output to be present as PNG file
+png(file = "skew.png")
+
+g2 <- skewness(my_data[1:4])
+print(g2)
+  
+# Histogram of distribution
+hist(g2)
+  
+# Saving the file
+dev.off()
+```
+### Determine the kurtosis of the distribution
+Data that follows a mesokurtic distribution shows an excess kurtosis of zero or close to zero. This means that if the data follows a normal distribution, it follows a mesokurtic distribution. Leptokurtic indicates a positive excess kurtosis. The leptokurtic distribution shows heavy tails on either side, indicating large outliers. A platykurtic distribution shows a negative excess kurtosis. The kurtosis reveals a distribution with flat tails. The flat tails indicate the small outliers in a distribution.
+
+```{r}
+# output to be present as PNG file
+png(file = "platykurtic.png")
+  
+# Find the kurtosis of distribution
+X5 <- kurtosis(my_data[1:4])
+print(X5)
+
+hist(X5)
+  
+# Saving the file
+dev.off()
+```
+The income variable had a kurtosis value of 2.891913 which is close to 3. This variable had a Leptokurtic type of distribution. it's was also evident from the boxplot that there were outliers.
+
+# 4.0 Bivariate Analysis
+
+```{r}
+# Find the covariance matrix
+cat("Covariance Matrix of the Numerical Variables:\n")
+X <- cov(my_data[1:4])
+print(X)
+```
+
+```{r}
+# Using function cov2cor()
+# To convert covariance matrix to correlation matrix
+cat("The Correlation Matrix:\n")
+print(cov2cor(X))
+```
+
+```{r}
+# Using cor() method to find the Pearson correlation coefficient 
+# Correlation Matrix using cor function
+X1 <- cor(my_data[1:4])
+
+# Print the result 
+cat("Pearson correlation coefficient is:\n")
+print(X1)
+
+```
+
+```{r}
+# Plot a qplot  forage
+qplot(log(age), bins=30, data = df,color = factor(age), xlab = 'Age')+
+  labs(
+    title='Plot between those who Clicked on the ad and Age',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+# Plot a qplot for age
+qplot((timestamp), bins=30, data = df, fill=clicked_on_ad,color = factor(age), xlab = 'Time')+
+  labs(
+    title='Plot between those who Clicked on the ad and on Different Time',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+# t test and p value for age and income
+cat("The t test and p value for age and income is as shown below:\n")
+cor.test(my_data$age, my_data$income)
+```
+
+```{r}
+# t test and p value for age and clicks on ad
+cat("The t test and p value for age and clicks on ad is as shown below:\n")
+cor.test(my_data$age, my_data$clicked_on_ad)
+```
+
+```{r}
+# t test and p value for income and clicks on ad
+cat("The t test and p value for income and clicks on ad is as shown below:\n")
+cor.test(my_data$income, my_data$clicked_on_ad)
+```
+
+```{r}
+cor.test(my_data$daily_time_site, my_data$clicked_on_ad)
+```
+```{r}
+# t test and p value for clicks on ad and daily internet usage
+cat("The t test and p value for clicks ann ad and daily internet usage is as shown below:\n")
+cor.test(my_data$daily_internet_usage, my_data$clicked_on_ad)
+```
+
+```{r}
+# t test and p value between gender and the number of clicks on the ad
+cat("The t test and p value for gender and number of clicks on ad is as shown below:\n")
+cor.test(my_data$male, my_data$clicked_on_ad)
+```
+
+
+```{r}
+# t test and p value for gender and daily time spent on site
+cat("The t test and p value for gender and daily time spent on site is as shown below:\n")
+cor.test(my_data$daily_time_site, my_data$male)
+```
+
+
+```{r}
+# t test and p value for age and daily time spent on site
+infoy <- "The t test and p value for age and daily time spent on site is as shown below:\n"
+cat(infoy)
+cor.test(my_data$daily_time_site, my_data$age)
+
+```
+
+
+## 4.1 Scatter Plots between Numeric variables
+```{r}
+# Scatter plot for age and those who clicked on the ad
+qplot(clicked_on_ad, age, data = df, geom = c("point", "smooth"))+
+  labs(
+    title='Scatter Plot between those who Clicked on the ad and Age',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+  
+```
+
+```{r}
+# Scatter Plot between those who clicked on the ad and income
+qplot(clicked_on_ad, income, data = df,color = factor(age), geom = c("point", "smooth"))+
+  labs(
+    title='Scatter Plot between those who Clicked on the ad and Income',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+  
+```
+
+```{r}
+# Scatter plot for daily internet usage and those who clicked on the ad
+qplot(clicked_on_ad, daily_internet_usage,color = factor(age), data = df, geom = c("point", "smooth"))+
+  labs(
+    title='Scatter Plot for Daily Internet Usage and those who Clicked on the ad',
+    subtitle = 'Those who spent more on Daily Inernet Usage never clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+# Scatter plot for male and those who clicked on the ad
+qplot(male, clicked_on_ad, data = df,color = factor(age), geom = c("point", "smooth"))+
+  labs(
+    title='Scatter Plot for Males and Females who Clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+# Scatter plot for daily time spent on the site and those who clicked on the ad
+qplot(clicked_on_ad, daily_time_site, data = df, color = factor(age), geom = c("point", "smooth"))+
+  labs(
+    title='Scatter Plot for Daily Time Spent on the Site and those who Clicked on the ad',
+    subtitle = 'Those who spent more time on the site never clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+# Scatter plot for daily time spent on the site and those who clicked on the ad
+qplot(clicked_on_ad, timestamp, data = df, geom = c("point", "smooth"))+
+  labs(
+    title='Scatter plot for daily time spent on the site and those who clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+# 4.2 Analysis for those who clicked on ad and those who didn't
+## 4.2.1 Numerical Variables Analysis for those who clicked on ad 
+```{r}
+view_ad <- df[df$clicked_on_ad==1,]
+par(mfrow= c(2,2))
+for (q in 1:4){
+  hist(view_ad[, q], main=names(view_ad)[q], xlab=NULL)
+}
+  
+```
+
+## 4.2.2 Numerical Variables Analysis for those who never clicked on ad
+```{r}
+never_view_ad <- df[df$clicked_on_ad==0,]
+par(mfrow= c(2,2))
+for (q in 1:4){
+  hist(never_view_ad[, q], main=names(never_view_ad)[q], xlab=NULL)
+}
+```
+
+## 4.2.3 Character Variables Analysis for those who clicked on ad
+```{r}
+View(view_ad[, c(5:10)])
+```
+
+## 4.2.4 Determine the ages that clicked on the ad the most per income sum
+```{r}
+popular_ages <- my_data %>%
+  filter(clicked_on_ad ==1) %>% 
+  group_by(male, age) %>% 
+  summarize(income= sum(income)) %>% 
+  slice_max(income, n=5)
+
+popular_ages
+```
+
+```{r}
+popular_ages %>% 
+  ggplot(aes(x = male, y=income)) +
+  geom_col()+
+  facet_wrap(age~.)+
+  labs(
+    title='Clicks on ad by Gender and Age',
+    subtitle = 'Females aged 38years old Never clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+popular_ages %>% 
+  ggplot(aes(x = male, y=age)) +
+  geom_col()+
+  facet_wrap(income~.)+
+  labs(
+    title='Clicks on ad by Gender and Income Category',
+    subtitle = 'Most Females between age 45 and 50 years old never Clicked on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+popular_ages %>% 
+  ggplot(aes(x = age, y=income)) +
+  geom_col()+
+  facet_wrap(male~.)+
+  labs(
+    title='Ages with most clicks on the ad by income',
+    subtitle = 'Majority of the Females aged 45years and 38years old had no clicks on the ad',
+    caption = 'Source: http://bit.ly/IPAdvertisingData'
+  )
+```
+
+```{r}
+my_data %>% 
+  group_by(ad_topic_line, clicked_on_ad) %>% 
+  summarise(
+    trendiness = max(daily_time_site)/ sum(daily_time_site),
+    total_daily_time_site = sum(daily_time_site)
+    ) %>% 
+  filter(total_daily_time_site >60) %>% 
+  arrange(desc(trendiness)) %>% 
+  head(10)
+```
+
+## 4.2.5 Determine the sites with most time spent on them
+```{r}
+# Create a dataframe of time spent daily on site
+time_on_site <- view_ad[order(-view_ad$daily_time_site),]
+
+# Print the sites with most time spent per day 
+cat("The topics with the most time spent on were:\n")
+head(time_on_site$ad_topic_line)
+```
+
+```{r}
+# Print the sites that had least time spent on them
+cat("The topics that people spent least time were:\n")
+tail(time_on_site$ad_topic_line)
+```
+## 4. K-Nearest Neighbors Classification
+```{r}
+# Split the x and y in the train and test dataset
+# Independent variables
+advt_tr_feat <- train[,1:8]
+advt_va_feat <- test[,1:8]
+
+# Dependent Variables
+train_label = train$clicked_on_ad
+test_label = test$clicked_on_ad
+
+# Training the label
+test_predict <- knn(advt_tr_feat, advt_va_feat,train_label, k=5)
+
+# CrossTable(test_label,test_predict)
+table(test_label,test_predict)
+```
+
+# 5.0 Conclusion
+The females have the majority site visits but they don't click on the ad. The minimum age of the participant was 19 years old while the oldest was 60 years old. The minimum daily time spent on the site was 32minutes while the maximum time spent was 91 minutes. There's a good chance to increase the number of clicks on the ad having a minimum time spent on the site as 31 minutes.
+
+From the Chi Square Test of Independence, there was no correlation between daily internet usage, daily time spent on the site and income on the clicks on the ad. But there was a strong correlation between age and clicks on the ad. It is therefore important to focus on the ages of those who visit the site to increase the target market. These are females between the ages of 38 to 45 years old.
+
+# 6.0 Recommedation
+The least overall time spent on the site without having a click on the ad was 60minutes. Which is higher than the least time spent on the site for those who click on the ad. I would recommend increase in the number of advertisement during the months of February, April, May, June, September and December because they are the months' that have no clicks on the ad in order to ensure that the number of clicks on the ad increases.
+
+Create awareness on cryptography to encourage more females (between the ages of 24 and 30) the importance of studying STEM courses. Let the users visiting the site know that the size of the ad and make it as brief as possible but at the same time conveying the message intended.
+
